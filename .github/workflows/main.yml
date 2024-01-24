@@ -1,25 +1,30 @@
-name: Run Azure Login with OpenID Connect and PowerShell
-on: [push]
+on: workflow_dispatch
 
 permissions:
   id-token: write
   contents: read
-      
-jobs: 
-  Windows-latest:
-    runs-on: windows-latest
+
+name: Azure Bicep
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [dev, test, prod]
+    environment: ${{ matrix.environment }}
     steps:
-      - name: OIDC Login to Azure Public Cloud with AzPowershell (enableAzPSSession true)
-        uses: azure/login@v1
+      - uses: actions/checkout@main
+      - uses: azure/login@v1
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }} 
           enable-AzPSSession: true
-
-      - name: 'Get resource group with PowerShell action'
-        uses: azure/powershell@v1
+      - name: Run ARM deploy
+        uses: azure/arm-deploy@v1
         with:
-          inlineScript: |
-            Get-AzResourceGroup
-          azPSVersion: "latest"
+          subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          resourceGroupName: ${{ vars.AZURE_RG }}
+          template: ./InfrastructureAsCode/main.bicep
+          deploymentName: ${{ vars.TARGET_ENVIRONMENT }}
+          parameters: environment=${{ vars.TARGET_ENVIRONMENT }}
