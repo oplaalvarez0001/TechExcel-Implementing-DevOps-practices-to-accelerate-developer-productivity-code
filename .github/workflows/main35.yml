@@ -8,10 +8,7 @@ name: Azure Bicep
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        environment: [production]
-    environment: ${{ matrix.environment }}
+    
     steps:
       - uses: actions/checkout@main
       - uses: azure/login@v1
