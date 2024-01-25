@@ -24,4 +24,4 @@ jobs:
           resourceGroupName: ${{ secrets.AZURE_RG }}
           template: ./InfrastructureAsCode/main.bicep
           deploymentName: production
-          parameters: environment=production
+          # parameters: environment=production
